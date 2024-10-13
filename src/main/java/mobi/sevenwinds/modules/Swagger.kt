@@ -4,7 +4,8 @@ import com.papsign.ktor.openapigen.APITag
 import com.papsign.ktor.openapigen.OpenAPIGen
 import com.papsign.ktor.openapigen.schema.namer.DefaultSchemaNamer
 import com.papsign.ktor.openapigen.schema.namer.SchemaNamer
-import io.ktor.application.*
+import io.ktor.application.Application
+import io.ktor.application.install
 import mobi.sevenwinds.Const
 import kotlin.reflect.KType
 
@@ -40,5 +41,5 @@ fun Application.initSwagger() {
 @Suppress("NonAsciiCharacters", "EnumEntryName")
 enum class SwaggerTag(override val description: String = "") : APITag {
     Бюджет,
-    ;
+    Автор;
 }
