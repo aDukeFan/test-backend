@@ -7,16 +7,26 @@ import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.papsign.ktor.openapigen.annotations.type.common.ConstraintViolation
 import com.papsign.ktor.openapigen.exceptions.OpenAPIRequiredFieldException
 import com.papsign.ktor.openapigen.route.apiRouting
-import io.ktor.application.*
-import io.ktor.features.*
-import io.ktor.http.*
-import io.ktor.jackson.*
-import io.ktor.locations.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.server.netty.*
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.features.CORS
+import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.features.NotFoundException
+import io.ktor.features.StatusPages
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.jackson.jackson
+import io.ktor.locations.Locations
+import io.ktor.request.path
+import io.ktor.response.respond
+import io.ktor.routing.routing
+import io.ktor.server.netty.EngineMain
 import mobi.sevenwinds.app.Config
+import mobi.sevenwinds.app.author.author
 import mobi.sevenwinds.modules.DatabaseFactory
 import mobi.sevenwinds.modules.initSwagger
 import mobi.sevenwinds.modules.serviceRouting
@@ -49,7 +59,7 @@ fun Application.module() {
         level = Level.INFO
         filter { call ->
             Config.logAllRequests ||
-            call.request.path().startsWith("/")
+                    call.request.path().startsWith("/")
                     && (call.response.status()?.value ?: 0) >= 500
         }
     }
@@ -59,6 +69,7 @@ fun Application.module() {
         method(HttpMethod.Put)
         method(HttpMethod.Delete)
         method(HttpMethod.Patch)
+        method(HttpMethod.Post)
         header(HttpHeaders.Authorization)
         header(HttpHeaders.ContentType)
         header(HttpHeaders.AccessControlAllowOrigin)
@@ -69,6 +80,7 @@ fun Application.module() {
     }
 
     apiRouting {
+        author()
         swaggerRouting()
     }
 

@@ -1,5 +1,7 @@
 package mobi.sevenwinds.app.budget
 
+import BudgetResponseDeserializer
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.papsign.ktor.openapigen.annotations.parameters.PathParam
 import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
 import com.papsign.ktor.openapigen.annotations.type.number.integer.max.Max
@@ -13,7 +15,7 @@ import com.papsign.ktor.openapigen.route.route
 
 fun NormalOpenAPIRoute.budget() {
     route("/budget") {
-        route("/add").post<Unit, BudgetRecord, BudgetRecord>(info("Добавить запись")) { param, body ->
+        route("/add").post<Unit, BudgetResponse, BudgetRecord>(info("Добавить запись")) { param, body ->
             respond(BudgetService.addRecord(body))
         }
 
@@ -29,19 +31,73 @@ data class BudgetRecord(
     @Min(1900) val year: Int,
     @Min(1) @Max(12) val month: Int,
     @Min(1) val amount: Int,
-    val type: BudgetType
+    val type: BudgetType,
+    val authorId: Int?
 )
+
+@JsonDeserialize(using = BudgetResponseDeserializer::class)
+abstract class BudgetResponse(
+    open val year: Int,
+    open val month: Int,
+    open val amount: Int,
+    open val type: BudgetType
+) {
+    abstract fun displayInfo(): String
+}
+
+class BudgetResponseWithoutAuthor(
+    year: Int,
+    month: Int,
+    amount: Int,
+    type: BudgetType
+) : BudgetResponse(year, month, amount, type) {
+
+    override fun displayInfo(): String { // Реализуем метод
+        return "year: $year, month: $month, amount: $amount, type: $type"
+    }
+}
+
+class BudgetResponseWithAuthor(
+    year: Int,
+    month: Int,
+    amount: Int,
+    type: BudgetType,
+    val authorName: String
+) : BudgetResponse(year, month, amount, type) {
+
+    override fun displayInfo(): String {
+        return "year: $year, month: $month, amount: $amount, type: $type, " +
+                "authorName: $authorName"
+    }
+}
+
+class BudgetResponseWithAuthorAndAuthorCreateAt(
+    year: Int,
+    month: Int,
+    amount: Int,
+    type: BudgetType,
+    val authorName: String,
+    val createAtAuthor: String
+) : BudgetResponse(year, month, amount, type) {
+
+    override fun displayInfo(): String {
+        return "year: $year, month: $month, amount: $amount, type: $type, " +
+                "authorName: $authorName, authorCreateAt: $createAtAuthor"
+    }
+}
+
 
 data class BudgetYearParam(
     @PathParam("Год") val year: Int,
     @QueryParam("Лимит пагинации") val limit: Int,
     @QueryParam("Смещение пагинации") val offset: Int,
+    @QueryParam("ФИО автора (опционально)") val authorName: String?,
 )
 
 class BudgetYearStatsResponse(
     val total: Int,
     val totalByType: Map<String, Int>,
-    val items: List<BudgetRecord>
+    val items: List<BudgetResponse>
 )
 
 enum class BudgetType {

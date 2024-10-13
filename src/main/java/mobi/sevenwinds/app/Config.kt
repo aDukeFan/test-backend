@@ -1,6 +1,6 @@
 package mobi.sevenwinds.app
 
-import io.ktor.config.*
+import io.ktor.config.ApplicationConfig
 
 object Config {
     val logAllRequests by lazy { config.propertyOrNull("ktor.logAllRequests")?.getString()?.toBoolean() == true }

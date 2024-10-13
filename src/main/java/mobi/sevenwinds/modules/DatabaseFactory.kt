@@ -2,7 +2,7 @@ package mobi.sevenwinds.modules
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.config.*
+import io.ktor.config.ApplicationConfig
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 
@@ -22,7 +22,7 @@ object DatabaseFactory {
 
         val flyway = Flyway.configure().dataSource(dbUrl, dbUser, dbPassword)
             .locations("classpath:db/migration")
-//            .baselineOnMigrate(true)
+            .baselineOnMigrate(true)
             .outOfOrder(true)
             .load()
 
